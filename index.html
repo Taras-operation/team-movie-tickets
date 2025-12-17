@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Квитки — Закритий показ</title>
+  <style>
+    :root{
+      --bg:#0b0f17; --card:#111827; --text:#e5e7eb; --muted:#9ca3af;
+      --free:#22c55e; --reserved:#f59e0b; --taken:#ef4444; --selected:#60a5fa;
+      --btn:#2563eb; --btn2:#374151; --line:#1f2937;
+      --vipBorder:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial}
+    .wrap{max-width:980px;margin:0 auto;padding:18px}
+    .top{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+    h1{margin:0 0 8px;font-size:20px}
+    .muted{color:var(--muted)}
+    .screen{margin:14px 0 10px;text-align:center;color:var(--muted)}
+    .screen .bar{height:10px;border-radius:999px;background:#374151;margin:8px auto 0;max-width:620px}
+    .hall{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+    .row{display:flex;align-items:center;gap:10px}
+    .row-label{width:34px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+    .seats{flex:1;display:flex;gap:6px;justify-content:center;flex-wrap:nowrap}
+    .spacer{width:20px}
+    button.seat{
+      width:32px;height:32px;border-radius:8px;border:1px solid #334155;
+      background:#0f172a;color:var(--text);cursor:pointer;
+      font-size:12px;font-variant-numeric:tabular-nums;
+      display:flex;align-items:center;justify-content:center;
+      user-select:none;
+    }
+    button.seat.free{border-color:rgba(34,197,94,.45)}
+    button.seat.reserved{border-color:rgba(245,158,11,.55)}
+    button.seat.taken{border-color:rgba(239,68,68,.55);opacity:.55;cursor:not-allowed}
+    button.seat.selected{outline:2px solid var(--selected);outline-offset:1px}
+    button.seat.vip{border-color:rgba(239,68,68,.8)}
+    .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+    .dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:6px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{border:none;border-radius:10px;padding:10px 12px;color:white;cursor:pointer}
+    .btn.primary{background:var(--btn)}
+    .btn.secondary{background:var(--btn2)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .side{min-width:280px;flex:1}
+    .sel-list{margin:8px 0 0;padding:0;list-style:none}
+    .sel-list li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #223047}
+    .price{font-variant-numeric:tabular-nums}
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px}
+    .modal{max-width:520px;width:100%}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid1{display:grid;grid-template-columns:1fr;gap:10px}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input{width:100%;padding:10px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:var(--text)}
+    .hr{height:1px;background:#223047;margin:12px 0}
+    .paybox{background:#0b1220;border:1px solid #223047;border-radius:12px;padding:12px}
+    .timer{font-size:16px;font-weight:700}
+    .toast{margin-top:10px;color:#fca5a5}
+    @media (max-width:520px){
+      .row-label{width:26px}
+      button.seat{width:28px;height:28px;border-radius:7px}
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="card" style="flex:2;min-width:320px">
+      <h1>🎬 Закритий показ фільму команди</h1>
+      <div class="muted">Оберіть місця в залі. Для онлайн-оплати бронювання тримається <b>10 хв</b>.</div>
+
+      <div class="screen">
+        ЕКРАН
+        <div class="bar"></div>
+      </div>
+
+      <div class="hall" id="hall"></div>
+
+      <div class="legend">
+        <span><span class="dot" style="background:var(--free)"></span>Вільне</span>
+        <span><span class="dot" style="background:var(--reserved)"></span>Заброньовано</span>
+        <span><span class="dot" style="background:var(--taken)"></span>Зайняте</span>
+        <span><span class="dot" style="background:var(--selected)"></span>Обрано</span>
+      </div>
+    </div>
+
+    <div class="card side">
+      <h1 style="font-size:16px;margin-bottom:6px">Ваші місця</h1>
+      <div class="muted" id="selHint">Клікніть по місцях у схемі.</div>
+      <ul class="sel-list" id="selList"></ul>
+      <div style="margin-top:10px;display:flex;justify-content:space-between">
+        <div class="muted">Разом:</div>
+        <div class="price" id="totalPrice">0 грн</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn secondary" id="btnClear" disabled>Скасувати</button>
+        <button class="btn primary" id="btnConfirm" disabled>Підтвердити</button>
+      </div>
+
+      <div class="muted" style="margin-top:10px" id="syncStatus">Синхронізація…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="card modal">
+    <h1 style="font-size:18px">Підтвердження</h1>
+    <div class="muted">Заповніть дані покупця. Місця будуть в одному квитку.</div>
+
+    <div class="hr"></div>
+
+    <div class="grid">
+      <div>
+        <label>Імʼя та прізвище</label>
+        <input id="inpName" placeholder="Напр. Іван Іванов" />
+      </div>
+      <div>
+        <label>Номер телефону</label>
+        <input id="inpPhone" placeholder="+380..." />
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="muted" style="margin-bottom:8px">Оберіть спосіб оплати:</div>
+    <div class="grid">
+      <button class="btn primary" id="btnPayOnline">💳 Оплата онлайн</button>
+      <button class="btn secondary" id="btnPayEntrance">💵 Оплата при вході</button>
+    </div>
+
+    <div class="toast" id="modalErr" style="display:none"></div>
+
+    <div class="hr"></div>
+
+    <div id="paySection" style="display:none">
+      <div class="paybox">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+          <div>
+            <div class="muted">Бронювання діє ще:</div>
+            <div class="timer" id="timer">10:00</div>
+          </div>
+          <div style="text-align:right">
+            <div class="muted">До сплати:</div>
+            <div class="price" id="modalTotal">0 грн</div>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="muted" style="margin-bottom:6px">Оплата:</div>
+        <div style="font-weight:600">Monobank / Картка: <span id="payRequisites">XXXX XXXX XXXX XXXX</span></div>
+        <div class="muted" style="margin-top:6px">Після оплати натисніть кнопку нижче.</div>
+        <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn primary" id="btnIpaid">Я оплатив(ла)</button>
+          <button class="btn secondary" id="btnClose">Закрити</button>
+        </div>
+        <div class="toast" id="payErr" style="display:none"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:10px;display:flex;justify-content:flex-end">
+      <button class="btn secondary" id="btnX">Закрити</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ====== CONFIG ======
+  const API_URL = "https://script.google.com/macros/s/AKfycbxUdvb-OyoYtDk8kn2jV-wyA7jYDtiWdJlKlitHN_v-BkOmamLtWby82bUnKsU_5D8Mow/exec";
+
+  // Ціни (можеш змінити)
+  const PRICE_STANDARD = 165;
+  const PRICE_VIP = 190;
+
+  // Реквізити (заповниш свої)
+  const PAY_REQUISITES_TEXT = "ВСТАВТЕ_НОМЕР_КАРТКИ_АБО_ПОСИЛАННЯ_НА_БАНКУ";
+
+  // План зала (як на скріні):
+  // ряд 1: 1-6
+  // ряд 2: 1-14
+  // ряд 3: 1-18
+  // ряд 4-9: 1-20
+  // ряд 10 (VIP): 1-16
+  const HALL_ROWS = [
+    { row: 1, seats: range(1,6),  vip:false, center:true },
+    { row: 2, seats: range(1,14), vip:false, center:true },
+    { row: 3, seats: range(1,18), vip:false, center:true },
+    { row: 4, seats: range(1,20), vip:false, center:true },
+    { row: 5, seats: range(1,20), vip:false, center:true },
+    { row: 6, seats: range(1,20), vip:false, center:true },
+    { row: 7, seats: range(1,20), vip:false, center:true },
+    { row: 8, seats: range(1,20), vip:false, center:true },
+    { row: 9, seats: range(1,20), vip:false, center:true },
+    { row: 10,seats: range(1,16), vip:true,  center:true },
+  ];
+
+  function range(a,b){ const out=[]; for(let i=a;i<=b;i++) out.push(i); return out; }
+
+  // ====== STATE ======
+  const selected = new Set(); // "row-seat"
+  let seatsReserved = new Set();
+  let seatsTaken = new Set();
+  let seatsHoldMinutes = 10;
+
+  // ====== UI refs ======
+  const hallEl = document.getElementById('hall');
+  const selListEl = document.getElementById('selList');
+  const totalPriceEl = document.getElementById('totalPrice');
+  const btnClear = document.getElementById('btnClear');
+  const btnConfirm = document.getElementById('btnConfirm');
+  const selHint = document.getElementById('selHint');
+  const syncStatus = document.getElementById('syncStatus');
+
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const inpName = document.getElementById('inpName');
+  const inpPhone = document.getElementById('inpPhone');
+  const btnPayOnline = document.getElementById('btnPayOnline');
+  const btnPayEntrance = document.getElementById('btnPayEntrance');
+  const modalErr = document.getElementById('modalErr');
+
+  const paySection = document.getElementById('paySection');
+  const modalTotal = document.getElementById('modalTotal');
+  const payRequisites = document.getElementById('payRequisites');
+  const timerEl = document.getElementById('timer');
+  const btnIpaid = document.getElementById('btnIpaid');
+  const payErr = document.getElementById('payErr');
+  const btnClose = document.getElementById('btnClose');
+  const btnX = document.getElementById('btnX');
+
+  payRequisites.textContent = PAY_REQUISITES_TEXT;
+
+  // Timer state
+  let timerInterval = null;
+  let reservedUntilMs = null;
+  let pendingOrderId = null;
+
+  // ====== Render Hall ======
+  function seatKey(row, seat){ return `${row}-${seat}`; }
+
+  function getSeatPrice(row){
+    return row === 10 ? PRICE_VIP : PRICE_STANDARD;
+  }
+
+  function seatStatusClass(key, row){
+    if (seatsTaken.has(key)) return 'taken';
+    if (seatsReserved.has(key)) return 'reserved';
+    return 'free';
+  }
+
+  function renderHall(){
+    hallEl.innerHTML = '';
+    HALL_ROWS.forEach(r => {
+      const rowWrap = document.createElement('div');
+      rowWrap.className = 'row';
+
+      const label = document.createElement('div');
+      label.className = 'row-label';
+      label.textContent = r.row;
+      rowWrap.appendChild(label);
+
+      const seats = document.createElement('div');
+      seats.className = 'seats';
+
+      r.seats.forEach(seatNum => {
+        const key = seatKey(r.row, seatNum);
+        const btn = document.createElement('button');
+        btn.className = `seat ${seatStatusClass(key, r.row)} ${r.vip ? 'vip' : ''}`;
+        btn.textContent = seatNum;
+
+        const isTaken = seatsTaken.has(key);
+        btn.disabled = isTaken;
+
+        if (selected.has(key)) btn.classList.add('selected');
+
+        btn.addEventListener('click', () => {
+          if (seatsTaken.has(key) || seatsReserved.has(key)) return;
+          if (selected.has(key)) selected.delete(key);
+          else selected.add(key);
+          renderHall();
+          renderSelection();
+        });
+
+        seats.appendChild(btn);
+      });
+
+      rowWrap.appendChild(seats);
+      hallEl.appendChild(rowWrap);
+    });
+  }
+
+  function renderSelection(){
+    const keys = Array.from(selected);
+    keys.sort((a,b) => {
+      const [ra,sa]=a.split('-').map(Number);
+      const [rb,sb]=b.split('-').map(Number);
+      return ra - rb || sa - sb;
+    });
+
+    selListEl.innerHTML = '';
+    let total = 0;
+
+    keys.forEach(k => {
+      const [row, seat] = k.split('-').map(Number);
+      const price = getSeatPrice(row);
+      total += price;
+
+      const li = document.createElement('li');
+      li.innerHTML = `<span>Ряд ${row}, місце ${seat}</span><span class="price">${price} грн</span>`;
+      selListEl.appendChild(li);
+    });
+
+    totalPriceEl.textContent = `${total} грн`;
+    modalTotal.textContent = `${total} грн`;
+
+    const has = keys.length > 0;
+    btnClear.disabled = !has;
+    btnConfirm.disabled = !has;
+    selHint.textContent = has ? `Обрано місць: ${keys.length}` : 'Клікніть по місцях у схемі.';
+  }
+
+  // ====== API ======
+  async function apiGetSeats(){
+    const url = `${API_URL}?action=seats`;
+    const res = await fetch(url, { method:'GET' });
+    return await res.json();
+  }
+
+  async function apiCreateOrder(payload){
+    const url = `${API_URL}?action=create_order`;
+    const res = await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }
+
+  async function apiConfirmPayment(orderId){
+    const url = `${API_URL}?action=confirm_payment`;
+    const res = await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ order_id: orderId })
+    });
+    return await res.json();
+  }
+
+  // ====== Sync seats ======
+  async function syncSeats(){
+    try{
+      syncStatus.textContent = 'Синхронізація…';
+      const data = await apiGetSeats();
+      if (!data || data.ok === false && data.error) throw new Error(data.error);
+
+      seatsReserved = new Set(data.reserved || []);
+      seatsTaken = new Set(data.taken || []);
+      seatsHoldMinutes = data.hold_minutes || 10;
+
+      // якщо вибрані місця раптом стали зайняті — прибрати
+      for (const k of Array.from(selected)){
+        if (seatsTaken.has(k) || seatsReserved.has(k)) selected.delete(k);
+      }
+
+      renderHall();
+      renderSelection();
+      syncStatus.textContent = `Оновлено. Таймер бронювання (онлайн): ${seatsHoldMinutes} хв`;
+    } catch(err){
+      syncStatus.textContent = 'Помилка синхронізації. Спробуйте оновити сторінку.';
+      console.error(err);
+    }
+  }
+
+  // ====== Modal logic ======
+  function openModal(){
+    modalErr.style.display = 'none';
+    payErr.style.display = 'none';
+    paySection.style.display = 'none';
+    pendingOrderId = null;
+    reservedUntilMs = null;
+    stopTimer();
+    modalBackdrop.style.display = 'flex';
+    payRequisites.textContent = PAY_REQUISITES_TEXT;
+    inpName.focus();
+  }
+
+  function closeModal(){
+    modalBackdrop.style.display = 'none';
+    stopTimer();
+  }
+
+  function showModalError(msg){
+    modalErr.style.display = 'block';
+    modalErr.textContent = msg;
+  }
+  function showPayError(msg){
+    payErr.style.display = 'block';
+    payErr.textContent = msg;
+  }
+
+  function startTimer(untilMs){
+    reservedUntilMs = untilMs;
+    payErr.style.display = 'none';
+    paySection.style.display = 'block';
+    tickTimer();
+    timerInterval = setInterval(tickTimer, 500);
+  }
+
+  function stopTimer(){
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+    reservedUntilMs = null;
+    timerEl.textContent = '00:00';
+  }
+
+  function tickTimer(){
+    const left = Math.max(0, reservedUntilMs - Date.now());
+    const sec = Math.floor(left/1000);
+    const mm = String(Math.floor(sec/60)).padStart(2,'0');
+    const ss = String(sec%60).padStart(2,'0');
+    timerEl.textContent = `${mm}:${ss}`;
+    if (left <= 0){
+      stopTimer();
+      showPayError('Час бронювання вийшов. Оновіть сторінку та оберіть місця ще раз.');
+      // примусово оновимо статуси
+      syncSeats();
+    }
+  }
+
+  function getSelectedPayload(){
+    const name = inpName.value.trim();
+    const phone = inpPhone.value.trim();
+    const seats = Array.from(selected);
+    const total = seats.reduce((sum, k) => sum + getSeatPrice(Number(k.split('-')[0])), 0);
+    return { name, phone, seats, total };
+  }
+
+  btnClear.addEventListener('click', () => {
+    selected.clear();
+    renderHall(); renderSelection();
+  });
+
+  btnConfirm.addEventListener('click', () => openModal());
+  btnX.addEventListener('click', closeModal);
+  btnClose.addEventListener('click', closeModal);
+
+  // Оплата при вході (без таймера)
+  btnPayEntrance.addEventListener('click', async () => {
+    modalErr.style.display = 'none';
+    const { name, phone, seats, total } = getSelectedPayload();
+    if (!name) return showModalError('Вкажіть імʼя та прізвище.');
+    if (!phone) return showModalError('Вкажіть номер телефону.');
+    if (!seats.length) return showModalError('Оберіть хоча б одне місце.');
+
+    btnPayEntrance.disabled = true;
+    btnPayOnline.disabled = true;
+
+    try{
+      const resp = await apiCreateOrder({ name, phone, seats, total, payment_type: 'entrance' });
+      if (!resp.ok){
+        if (resp.error === 'seats_conflict') {
+          await syncSeats();
+          throw new Error('Деякі місця щойно стали недоступними. Оберіть інші.');
+        }
+        throw new Error(resp.error || 'Помилка створення замовлення');
+      }
+      // Очищаємо вибір (місця вже зайняті)
+      selected.clear();
+      renderSelection();
+      await syncSeats();
+
+      window.location.href = `ticket.html?order_id=${encodeURIComponent(resp.order_id)}`;
+    } catch(e){
+      showModalError(String(e.message || e));
+    } finally{
+      btnPayEntrance.disabled = false;
+      btnPayOnline.disabled = false;
+    }
+  });
+
+  // Оплата онлайн (reserved + таймер)
+  btnPayOnline.addEventListener('click', async () => {
+    modalErr.style.display = 'none';
+    const { name, phone, seats, total } = getSelectedPayload();
+    if (!name) return showModalError('Вкажіть імʼя та прізвище.');
+    if (!phone) return showModalError('Вкажіть номер телефону.');
+    if (!seats.length) return showModalError('Оберіть хоча б одне місце.');
+
+    btnPayEntrance.disabled = true;
+    btnPayOnline.disabled = true;
+
+    try{
+      const resp = await apiCreateOrder({ name, phone, seats, total, payment_type: 'online' });
+      if (!resp.ok){
+        if (resp.error === 'seats_conflict') {
+          await syncSeats();
+          throw new Error('Деякі місця щойно стали недоступними. Оберіть інші.');
+        }
+        throw new Error(resp.error || 'Помилка створення бронювання');
+      }
+
+      pendingOrderId = resp.order_id;
+
+      // reserved_until приходить як Date або порожньо; у JSON це буде строка.
+      // Спробуємо розпарсити
+      const until = resp.reserved_until ? Date.parse(resp.reserved_until) : (Date.now() + 10*60*1000);
+      startTimer(until);
+
+      // оновлюємо схему, щоб інші бачили бронь
+      await syncSeats();
+
+      // Кнопка "Я оплатив"
+      paySection.style.display = 'block';
+    } catch(e){
+      showModalError(String(e.message || e));
+    } finally{
+      btnPayEntrance.disabled = false;
+      btnPayOnline.disabled = false;
+    }
+  });
+
+  // "Я оплатив(ла)" => confirm_payment => квиток
+  btnIpaid.addEventListener('click', async () => {
+    payErr.style.display = 'none';
+    if (!pendingOrderId) return showPayError('Немає активного замовлення.');
+
+    btnIpaid.disabled = true;
+    try{
+      const resp = await apiConfirmPayment(pendingOrderId);
+      if (!resp.ok){
+        if (resp.error === 'expired') throw new Error('Час бронювання вийшов. Оберіть місця знову.');
+        throw new Error(resp.error || 'Помилка підтвердження');
+      }
+
+      selected.clear();
+      await syncSeats();
+      window.location.href = `ticket.html?order_id=${encodeURIComponent(pendingOrderId)}`;
+    } catch(e){
+      showPayError(String(e.message || e));
+    } finally{
+      btnIpaid.disabled = false;
+    }
+  });
+
+  // ====== Init ======
+  renderHall();
+  renderSelection();
+  syncSeats();
+  setInterval(syncSeats, 15000); // оновлення кожні 15 сек
+</script>
+</body>
+</html>
