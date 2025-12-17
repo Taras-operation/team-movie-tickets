@@ -16,6 +16,7 @@
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial}
+
     .wrap{max-width:1500px;margin:0 auto;padding:18px}
 
     .top{display:flex;gap:12px;align-items:flex-start;flex-wrap:nowrap}
@@ -23,7 +24,6 @@
     h1{margin:0 0 8px;font-size:20px}
     .muted{color:var(--muted)}
 
-    /* ===== Header centered ===== */
     .title-center{text-align:center;padding: 6px 6px 2px;}
     .title-center h1{margin:0;font-size:22px;font-weight:800;letter-spacing:.2px}
     .session-info{margin-top:8px}
@@ -31,7 +31,6 @@
     .session-sub{margin-top:6px;font-size:13px;color:var(--muted);line-height:1.45}
     .session-hint{margin-top:10px;font-size:12px;color:var(--muted)}
 
-    /* ===== Seatmap ===== */
     .seatmap{
       margin-top:12px;
       background: var(--seatmapBg);
@@ -61,20 +60,8 @@
       align-items:center;
       min-width:760px;
     }
-    .row-label{
-      opacity:.7;
-      font-size:13px;
-      font-variant-numeric:tabular-nums;
-      text-align:center;
-      user-select:none;
-    }
-    .seats{
-      display:flex;
-      justify-content:center;
-      gap:6px;
-      flex-wrap:nowrap;
-      flex-direction:row-reverse; /* нумерация справа налево */
-    }
+    .row-label{opacity:.7;font-size:13px;font-variant-numeric:tabular-nums;text-align:center;user-select:none}
+    .seats{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap;flex-direction:row-reverse}
 
     button.seat{
       position:relative;
@@ -91,18 +78,8 @@
     button.seat.taken{border-color:rgba(239,68,68,.55);opacity:.55;cursor:not-allowed}
     button.seat.selected{outline:2px solid var(--selected);outline-offset:1px}
 
-    /* VIP row style (10) */
-    button.seat.vip{
-      border-color:rgba(239,68,68,.85);
-      background:rgba(239,68,68,0.06);
-    }
-    button.seat.vip::after{
-      content:"★";
-      position:absolute;
-      top:-6px; right:-6px;
-      font-size:10px;
-      color:rgba(239,68,68,.95);
-    }
+    button.seat.vip{border-color:rgba(239,68,68,.85);background:rgba(239,68,68,0.06)}
+    button.seat.vip::after{content:"★";position:absolute;top:-6px;right:-6px;font-size:10px;color:rgba(239,68,68,.95)}
 
     .legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12px;opacity:.9}
     .dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:6px}
@@ -113,42 +90,21 @@
     .btn.secondary{background:var(--btn2)}
     .btn:disabled{opacity:.5;cursor:not-allowed}
 
-    /* Right column */
     .side{width:360px;min-width:360px;flex:0 0 360px}
     .sel-list{margin:8px 0 0;padding:0;list-style:none}
     .sel-list li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #223047}
     .price{font-variant-numeric:tabular-nums}
 
-    /* Price badge card */
-    .price-box{
-      background:rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.06);
-      border-radius:14px;
-      padding:12px;
-      margin-bottom:8px; /* маленький отступ, без “пустоты” */
-    }
-    .price-box h2{
-      margin:0 0 8px;
-      font-size:13px;
-      letter-spacing:.3px;
-      text-transform:uppercase;
-      color:var(--muted);
-      font-weight:800;
-    }
-    .price-row{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 10px;
-      border-radius:12px;
-      background:rgba(0,0,0,0.10);
-      border:1px solid rgba(255,255,255,0.05);
-      margin-top:8px;
-    }
+    .prices-card{padding:12px}
+    .prices-title{font-size:14px;font-weight:800;margin:0 0 10px}
+    .prices-list{display:flex;flex-direction:column;gap:8px}
+    .price-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.03);border-radius:12px}
     .price-row .left{color:var(--muted)}
-    .price-row .right{font-weight:900}
+    .price-row .right{font-weight:800}
+    .price-row.vip{border-color:rgba(239,68,68,.25); background: rgba(239,68,68,0.06);}
 
-    /* Modal */
+    .side-stack{display:flex;flex-direction:column;gap:10px}
+
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px}
     .modal{max-width:560px;width:100%}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -156,10 +112,12 @@
     input{width:100%;padding:10px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:var(--text)}
     .hr{height:1px;background:#223047;margin:12px 0}
 
+    /* ✅ ВАЖНО: paybox скрыт по умолчанию — покажем после брони */
     .paybox{
       background:#0b1220;border:1px solid #223047;border-radius:12px;padding:12px;
-      display:none; /* показываем после брони */
+      display:none;
     }
+
     .timer{font-size:16px;font-weight:700}
 
     .toast{margin-top:10px;color:#fca5a5}
@@ -181,12 +139,9 @@
 <body>
 <div class="wrap">
   <div class="top">
-
-    <!-- LEFT -->
     <div class="card" style="flex:1;min-width:420px">
       <div class="title-center">
         <h1>🎬 Закритий показ фільму Vuso Wings 2 years</h1>
-
         <div class="session-info">
           <div class="session-main">
             Понеділок, 22 листопада • Початок сеансу <b>18:30</b>
@@ -196,7 +151,6 @@
             Зал: <b>Червоний</b>
           </div>
         </div>
-
         <div class="session-hint">
           Оберіть місця в залі. Для онлайн-оплати бронювання тримається <b>10 хв</b>.
         </div>
@@ -208,7 +162,6 @@
             <div class="screen-title">ЕКРАН</div>
             <div class="screen-bar"></div>
           </div>
-
           <div class="hall-grid" id="hall"></div>
         </div>
 
@@ -221,38 +174,37 @@
       </div>
     </div>
 
-    <!-- RIGHT -->
     <div class="side">
-
-      <!-- PRICE CARD (TOP) -->
-      <div class="card price-box">
-        <h2>Ціни по рядах</h2>
-        <div class="price-row"><div class="left">1–5 ряд</div><div class="right">200 грн</div></div>
-        <div class="price-row"><div class="left">6–7 ряд</div><div class="right">300 грн</div></div>
-        <div class="price-row"><div class="left">8–9 ряд</div><div class="right">400 грн</div></div>
-        <div class="price-row"><div class="left">10 ряд (VIP)</div><div class="right">800 грн</div></div>
-      </div>
-
-      <!-- YOUR SEATS (BELOW) -->
-      <div class="card">
-        <h1 style="font-size:16px;margin-bottom:6px">Ваші місця</h1>
-        <div class="muted" id="selHint">Клікніть по місцях у схемі.</div>
-        <ul class="sel-list" id="selList"></ul>
-
-        <div style="margin-top:10px;display:flex;justify-content:space-between">
-          <div class="muted">Разом:</div>
-          <div class="price" id="totalPrice">0 грн</div>
+      <div class="side-stack">
+        <div class="card prices-card">
+          <div class="prices-title">Ціни по рядах</div>
+          <div class="prices-list">
+            <div class="price-row"><div class="left">1–5 ряд</div><div class="right">200 грн</div></div>
+            <div class="price-row"><div class="left">6–7 ряд</div><div class="right">300 грн</div></div>
+            <div class="price-row"><div class="left">8–9 ряд</div><div class="right">400 грн</div></div>
+            <div class="price-row vip"><div class="left">10 ряд (VIP)</div><div class="right">800 грн</div></div>
+          </div>
         </div>
 
-        <div class="actions">
-          <button class="btn secondary" id="btnClear" disabled>Скасувати</button>
-          <button class="btn primary" id="btnConfirm" disabled>Підтвердити</button>
-        </div>
+        <div class="card">
+          <h1 style="font-size:16px;margin-bottom:6px">Ваші місця</h1>
+          <div class="muted" id="selHint">Клікніть по місцях у схемі.</div>
+          <ul class="sel-list" id="selList"></ul>
 
-        <div class="muted" style="margin-top:10px" id="syncStatus">Синхронізація…</div>
+          <div style="margin-top:10px;display:flex;justify-content:space-between">
+            <div class="muted">Разом:</div>
+            <div class="price" id="totalPrice">0 грн</div>
+          </div>
+
+          <div class="actions">
+            <button class="btn secondary" id="btnClear" disabled>Скасувати</button>
+            <button class="btn primary" id="btnConfirm" disabled>Підтвердити</button>
+          </div>
+
+          <div class="muted" style="margin-top:10px" id="syncStatus">Синхронізація…</div>
+        </div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -275,17 +227,20 @@
       </div>
     </div>
 
-    <div class="actions" style="margin-top:12px">
-      <button class="btn primary" id="btnReserve">Забронювати</button>
+    <div class="toast error" id="modalErr" style="display:none"></div>
+
+    <div class="hr"></div>
+
+    <!-- ✅ КНОПКА БРОНИ — ВИДНА СРАЗУ -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn secondary" id="btnReserve">Створити бронювання</button>
       <button class="btn secondary" id="btnX">Закрити</button>
     </div>
 
-    <div class="toast" id="modalErr" style="display:none"></div>
-
-    <!-- PAYMENT BOX (hidden until booked) -->
-    <div class="hr"></div>
-
+    <!-- ✅ PAYBOX: ПОЯВЛЯЕТСЯ ТОЛЬКО ПОСЛЕ УСПЕШНОЙ БРОНИ -->
     <div class="paybox" id="paybox">
+      <div class="hr"></div>
+
       <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
         <div>
           <div class="muted">Бронювання діє ще:</div>
@@ -307,30 +262,24 @@
         <button class="btn primary" id="btnIpaid" disabled>Я оплатив(ла)</button>
       </div>
 
-      <div class="toast" id="payMsg" style="display:none"></div>
+      <div class="toast" id="payErr" style="display:none"></div>
     </div>
-
   </div>
 </div>
 
 <script>
   // ====== CONFIG ======
-  // ВАЖНО: тут должна быть ссылка script.googleusercontent.com (как ты получил)
-  const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgFW68goBEawo9mn1u-AmR4-LRpafkUMZwyYJAjdCv08PZcIwl7DkUdgTwG5Y_tsz0KX9WAHmbfOCLnLBP7stdxGyQUlunG9-hN6M8aQCttjf0dZK42hHerdPuIrbmPfkap9zAj5Dt4vLAwid76tMUeEIe9C3UFwl4F5mVM9pq-PJ5aZeUOuOjBqMSzhaIVTWTU4zhRvkfWmI9j03dhbTgPxkgZWWHnfgWjCD01i2a212skkbcHB5N4mCLyogYkUhcLO3g4ZdIkSFdVp_jI6uBCwyAuvSFW122lek0ZbOMoMNyfcXU&lib=MjhJhQfu6MSFRd7VG3DcTkWZ3NICiIIIT";
+  const API_URL = "https://script.google.com/macros/s/AKfycbxUdvb-OyoYtDk8kn2jV-wyA7jYDtiWdJlKlitHN_v-BkOmamLtWby82bUnKsU_5D8Mow/exec";
 
-  // цены по рядам
-  const PRICE_1_5 = 200;
-  const PRICE_6_7 = 300;
-  const PRICE_8_9 = 400;
-  const PRICE_10  = 800;
+  const PRICE_BY_ROW = {
+    1:200, 2:200, 3:200, 4:200, 5:200,
+    6:300, 7:300,
+    8:400, 9:400,
+    10:800
+  };
 
   const PAY_REQUISITES_TEXT = "ВСТАВТЕ_НОМЕР_КАРТКИ_АБО_ПОСИЛАННЯ_НА_БАНКУ";
 
-  function withAction(action){
-    return API_URL + "&action=" + encodeURIComponent(action);
-  }
-
-  // План зала
   const HALL_ROWS = [
     { row: 1, seats: range(1,6),  vip:false },
     { row: 2, seats: range(1,14), vip:false },
@@ -346,7 +295,7 @@
   function range(a,b){ const out=[]; for(let i=a;i<=b;i++) out.push(i); return out; }
 
   // ====== STATE ======
-  const selected = new Set(); // "row-seat"
+  const selected = new Set();
   let seatsReserved = new Set();
   let seatsTaken = new Set();
   let seatsHoldMinutes = 10;
@@ -364,33 +313,24 @@
   const inpName = document.getElementById('inpName');
   const inpPhone = document.getElementById('inpPhone');
   const modalErr = document.getElementById('modalErr');
-  const btnReserve = document.getElementById('btnReserve');
-  const btnX = document.getElementById('btnX');
 
-  const paybox = document.getElementById('paybox');
+  const paybox = document.getElementById('paybox'); // ✅ важное
   const modalTotal = document.getElementById('modalTotal');
   const payRequisites = document.getElementById('payRequisites');
   const timerEl = document.getElementById('timer');
+  const btnReserve = document.getElementById('btnReserve');
   const btnIpaid = document.getElementById('btnIpaid');
-  const payMsg = document.getElementById('payMsg');
+  const payErr = document.getElementById('payErr');
+  const btnX = document.getElementById('btnX');
 
   payRequisites.textContent = PAY_REQUISITES_TEXT;
 
-  // Timer state
   let timerInterval = null;
   let reservedUntilMs = null;
   let pendingOrderId = null;
 
-  // ====== helpers ======
   function seatKey(row, seat){ return `${row}-${seat}`; }
-
-  function getSeatPrice(row){
-    if (row >= 1 && row <= 5) return PRICE_1_5;
-    if (row >= 6 && row <= 7) return PRICE_6_7;
-    if (row >= 8 && row <= 9) return PRICE_8_9;
-    if (row === 10) return PRICE_10;
-    return PRICE_1_5;
-  }
+  function getSeatPrice(row){ return PRICE_BY_ROW[row] ?? 0; }
 
   function seatStatusClass(key){
     if (seatsTaken.has(key)) return 'taken';
@@ -398,10 +338,8 @@
     return 'free';
   }
 
-  // ====== Render Hall ======
   function renderHall(){
     hallEl.innerHTML = '';
-
     HALL_ROWS.forEach(r => {
       const left = document.createElement('div');
       left.className = 'row-label';
@@ -416,9 +354,7 @@
         btn.className = `seat ${seatStatusClass(key)} ${r.vip ? 'vip' : ''}`;
         btn.textContent = seatNum;
 
-        const isTaken = seatsTaken.has(key);
-        btn.disabled = isTaken;
-
+        btn.disabled = seatsTaken.has(key);
         if (selected.has(key)) btn.classList.add('selected');
 
         btn.addEventListener('click', () => {
@@ -472,41 +408,41 @@
     selHint.textContent = has ? `Обрано місць: ${keys.length}` : 'Клікніть по місцях у схемі.';
   }
 
-  // ====== API ======
   async function apiGetSeats(){
-    const res = await fetch(withAction('seats'), { method:'GET', cache:'no-store' });
+    const url = `${API_URL}?action=seats`;
+    const res = await fetch(url, { method:'GET' });
     return await res.json();
   }
 
   async function apiCreateOrder(payload){
-    const res = await fetch(withAction('create_order'), {
+    const url = `${API_URL}?action=create_order`;
+    const res = await fetch(url, {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload),
-      cache:'no-store'
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(payload)
     });
     return await res.json();
   }
 
   async function apiConfirmPayment(orderId){
-    const res = await fetch(withAction('confirm_payment'), {
+    const url = `${API_URL}?action=confirm_payment`;
+    const res = await fetch(url, {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ order_id: orderId }),
-      cache:'no-store'
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({ order_id: orderId })
     });
     return await res.json();
   }
 
-  // ====== Sync seats ======
   async function syncSeats(){
     try{
       syncStatus.textContent = 'Синхронізація…';
       const data = await apiGetSeats();
+      if (!data || (data.ok === false && data.error)) throw new Error(data.error);
 
       seatsReserved = new Set(data.reserved || []);
       seatsTaken = new Set(data.taken || []);
-      seatsHoldMinutes = data.hold_minutes || data.hold_minutes || 10;
+      seatsHoldMinutes = data.hold_minutes || 10;
 
       for (const k of Array.from(selected)){
         if (seatsTaken.has(k) || seatsReserved.has(k)) selected.delete(k);
@@ -521,14 +457,12 @@
     }
   }
 
-  // ====== Modal logic ======
   function openModal(){
     modalErr.style.display = 'none';
-    modalErr.textContent = '';
+    payErr.style.display = 'none';
 
+    // ✅ важно: при открытии модалки скрываем paybox
     paybox.style.display = 'none';
-    payMsg.style.display = 'none';
-    payMsg.textContent = '';
     btnIpaid.disabled = true;
 
     pendingOrderId = null;
@@ -536,6 +470,8 @@
     stopTimer();
 
     modalBackdrop.style.display = 'flex';
+    payRequisites.textContent = PAY_REQUISITES_TEXT;
+    btnReserve.disabled = false;
     inpName.focus();
   }
 
@@ -549,10 +485,10 @@
     modalErr.textContent = msg;
   }
 
-  function showPayMsg(msg, cls='info'){
-    payMsg.style.display = 'block';
-    payMsg.className = `toast ${cls}`;
-    payMsg.textContent = msg;
+  function showPayMsg(msg, type='info'){
+    payErr.style.display = 'block';
+    payErr.className = `toast ${type}`;
+    payErr.textContent = msg;
   }
 
   function startTimer(untilMs){
@@ -569,6 +505,7 @@
   }
 
   function tickTimer(){
+    if (!reservedUntilMs) { timerEl.textContent='00:00'; return; }
     const left = Math.max(0, reservedUntilMs - Date.now());
     const sec = Math.floor(left/1000);
     const mm = String(Math.floor(sec/60)).padStart(2,'0');
@@ -579,7 +516,11 @@
       showPayMsg('Час бронювання вийшов. Оновіть сторінку та оберіть місця ще раз.', 'error');
       syncSeats();
       btnIpaid.disabled = true;
+      btnReserve.disabled = false;
       pendingOrderId = null;
+
+      // ✅ и прячем paybox, т.к. бронь уже недействительна
+      paybox.style.display = 'none';
     }
   }
 
@@ -591,7 +532,6 @@
     return { name, phone, seats, total };
   }
 
-  // ====== events ======
   btnClear.addEventListener('click', () => {
     selected.clear();
     renderHall(); renderSelection();
@@ -600,10 +540,9 @@
   btnConfirm.addEventListener('click', openModal);
   btnX.addEventListener('click', closeModal);
 
-  // Забронювати => create_order => показываем paybox + enable "I paid"
   btnReserve.addEventListener('click', async () => {
     modalErr.style.display = 'none';
-    modalErr.textContent = '';
+    payErr.style.display = 'none';
 
     const { name, phone, seats, total } = getSelectedPayload();
     if (!name) return showModalError('Вкажіть імʼя та прізвище.');
@@ -614,45 +553,46 @@
 
     try{
       const resp = await apiCreateOrder({ name, phone, seats, total, payment_type: 'online' });
-
-      if (!resp || resp.ok === false){
-        if (resp && resp.error === 'seats_conflict') {
+      if (!resp.ok){
+        if (resp.error === 'seats_conflict') {
           await syncSeats();
           throw new Error('Деякі місця щойно стали недоступними. Оберіть інші.');
         }
-        throw new Error((resp && resp.error) ? resp.error : 'Помилка створення бронювання');
+        throw new Error(resp.error || 'Помилка створення бронювання');
       }
 
       pendingOrderId = resp.order_id;
-      const until = resp.reserved_until ? Date.parse(resp.reserved_until) : (Date.now() + seatsHoldMinutes*60*1000);
 
-      paybox.style.display = 'block';
-      btnIpaid.disabled = false;
+      const until = resp.reserved_until
+        ? Date.parse(resp.reserved_until)
+        : (Date.now() + seatsHoldMinutes*60*1000);
 
       startTimer(until);
+
       await syncSeats();
+
+      // ✅ вот та самая правка: показываем paybox только после брони
+      paybox.style.display = 'block';
+      btnIpaid.disabled = false;
 
       showPayMsg('Бронювання створено ✅ Оплатіть за реквізитами та натисніть “Я оплатив(ла)”.', 'ok');
     } catch(e){
       showModalError(String(e.message || e));
       btnReserve.disabled = false;
-    } finally{
-      // если бронь создана — кнопку "Забронювати" оставим disabled
-      // если нет — включим обратно
-      if (!pendingOrderId) btnReserve.disabled = false;
+      paybox.style.display = 'none';
+      btnIpaid.disabled = true;
     }
   });
 
-  // "Я оплатив(ла)" => confirm_payment => redirect
   btnIpaid.addEventListener('click', async () => {
-    if (!pendingOrderId) return showPayMsg('Немає активного бронювання. Натисніть “Забронювати”.', 'error');
+    if (!pendingOrderId) return showPayMsg('Немає активного бронювання. Натисніть “Створити бронювання”.', 'error');
 
     btnIpaid.disabled = true;
     try{
       const resp = await apiConfirmPayment(pendingOrderId);
-      if (!resp || resp.ok === false){
-        if (resp && resp.error === 'expired') throw new Error('Час бронювання вийшов. Оновіть сторінку та оберіть місця знову.');
-        throw new Error((resp && resp.error) ? resp.error : 'Помилка підтвердження');
+      if (!resp.ok){
+        if (resp.error === 'expired') throw new Error('Час бронювання вийшов. Оновіть сторінку та оберіть місця знову.');
+        throw new Error(resp.error || 'Помилка підтвердження');
       }
 
       selected.clear();
@@ -664,7 +604,6 @@
     }
   });
 
-  // ====== Init ======
   renderHall();
   renderSelection();
   syncSeats();
