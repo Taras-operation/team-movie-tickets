@@ -135,20 +135,17 @@
     .toast.ok{color:#86efac}
     .toast.error{color:#fca5a5}
 
-    /* ====== Responsive (общая) ====== */
     @media (max-width:1100px){
       .top{flex-wrap:wrap}
       .side{width:100%;min-width:0;flex:1}
     }
 
-    /* ====== MOBILE UPGRADE (десктоп не трогаем) ====== */
     .mobile-bar{display:none}
 
     @media (max-width:520px){
       .wrap{padding:12px}
       .card{border-radius:16px;padding:12px}
 
-      /* Тексты/заголовки влезают */
       .title-center{padding:4px 2px 0}
       .title-center h1{
         font-size:clamp(16px, 5vw, 20px);
@@ -170,17 +167,14 @@
         line-height:1.35;
       }
 
-      /* Схема: чуть компактнее */
       .seatmap{padding:10px}
       button.seat{width:28px;height:28px;border-radius:7px;font-size:12px}
       .hall-grid{grid-template-columns:22px 1fr 22px;row-gap:8px}
       .legend{gap:10px;font-size:12px}
 
-      /* Сайдбар: ок, но кнопки подтверждения должны быть всегда видны -> нижняя панель */
       .actions{display:none}
-      #syncStatus{padding-bottom:76px} /* чтобы текст не прятался за нижней панелью */
+      #syncStatus{padding-bottom:76px}
 
-      /* Нижняя панель */
       .mobile-bar{
         display:flex;
         position:fixed;
@@ -206,10 +200,9 @@
       }
       .mobile-bar .btn{padding:12px 12px;border-radius:12px;min-width:120px}
 
-      /* Модалка: без iOS zoom и влезает */
       .modal-backdrop{align-items:flex-start;justify-content:center}
       .modal{margin-top:12px;max-height:92vh;overflow:auto}
-      input{font-size:16px} /* ВАЖНО: iOS перестает зумить */
+      input{font-size:16px}
       .grid{grid-template-columns:1fr}
     }
   </style>
@@ -286,7 +279,6 @@
   </div>
 </div>
 
-<!-- MOBILE sticky bar (только на телефоне) -->
 <div class="mobile-bar" id="mobileBar">
   <div class="sum">
     <div class="label" id="mbHint">Разом</div>
@@ -298,7 +290,6 @@
   </div>
 </div>
 
-<!-- Modal -->
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="card modal">
     <h1 style="font-size:18px">Підтвердження</h1>
@@ -402,6 +393,10 @@
   let seatsTaken = new Set();
   let seatsHoldMinutes = 10;
 
+  // ✅ FIX: "наши" места после брони (чтобы syncSeats их не удалял и сумма не становилась 0)
+  let lockedSeatsSet = new Set();
+  let lockedTotal = 0;
+
   // ====== UI refs ======
   const hallEl = document.getElementById('hall');
   const selListEl = document.getElementById('selList');
@@ -411,7 +406,6 @@
   const selHint = document.getElementById('selHint');
   const syncStatus = document.getElementById('syncStatus');
 
-  // mobile bar refs
   const mobileBar = document.getElementById('mobileBar');
   const mbTotal = document.getElementById('mbTotal');
   const mbHint = document.getElementById('mbHint');
@@ -513,9 +507,11 @@
     });
 
     totalPriceEl.textContent = `${total} грн`;
-    modalTotal.textContent = `${total} грн`;
 
-    // mobile bar
+    // ✅ FIX: если есть активная бронь — показываем lockedTotal (чтобы точно не стало 0)
+    const totalForModal = pendingOrderId ? lockedTotal : total;
+    modalTotal.textContent = `${totalForModal} грн`;
+
     mbTotal.textContent = `${total} грн`;
     mbHint.textContent = keys.length ? `Обрано: ${keys.length}` : 'Разом';
 
@@ -564,8 +560,16 @@
       seatsTaken = new Set(data.taken || []);
       seatsHoldMinutes = data.hold_minutes || 10;
 
+      // ✅ FIX: не удаляем места из selected, если это "наша" активная бронь
       for (const k of Array.from(selected)){
-        if (seatsTaken.has(k) || seatsReserved.has(k)) selected.delete(k);
+        if (seatsTaken.has(k)) {
+          selected.delete(k);
+          continue;
+        }
+        if (seatsReserved.has(k)) {
+          const isOurLocked = pendingOrderId && lockedSeatsSet.has(k);
+          if (!isOurLocked) selected.delete(k);
+        }
       }
 
       renderHall();
@@ -584,13 +588,18 @@
     paybox.style.display = 'none';
     btnIpaid.disabled = true;
 
+    // ✅ reset lock on new modal open
     pendingOrderId = null;
     reservedUntilMs = null;
+    lockedSeatsSet = new Set();
+    lockedTotal = 0;
+
     stopTimer();
 
     modalBackdrop.style.display = 'flex';
     btnReserve.disabled = false;
 
+    renderSelection();
     setTimeout(() => inpName.focus(), 50);
   }
 
@@ -636,8 +645,14 @@
       syncSeats();
       btnIpaid.disabled = true;
       btnReserve.disabled = false;
+
+      // ✅ reset lock on expire
       pendingOrderId = null;
+      lockedSeatsSet = new Set();
+      lockedTotal = 0;
+
       paybox.style.display = 'none';
+      renderSelection();
     }
   }
 
@@ -649,11 +664,9 @@
     return { name, phone, seats, total };
   }
 
-  // ====== actions (общие) ======
   function clearSelection(){
     selected.clear();
     renderHall(); renderSelection();
-    // на мобиле после очистки пользователь видит нижнюю панель сразу
   }
 
   btnClear.addEventListener('click', clearSelection);
@@ -664,7 +677,6 @@
 
   btnX.addEventListener('click', closeModal);
 
-  // копирование карты
   btnCopyCard.addEventListener('click', async () => {
     try{
       await navigator.clipboard.writeText(PAY_CARD.replace(/\s+/g,' ').trim());
@@ -697,13 +709,18 @@
 
       pendingOrderId = resp.order_id;
 
+      // ✅ FIX: фиксируем "наши" места и сумму до syncSeats
+      lockedSeatsSet = new Set(seats);
+      lockedTotal = total;
+      renderSelection(); // чтобы modalTotal сразу стал правильным
+
       const until = resp.reserved_until
         ? Date.parse(resp.reserved_until)
         : (Date.now() + seatsHoldMinutes*60*1000);
 
       startTimer(until);
 
-      await syncSeats();
+      await syncSeats(); // теперь syncSeats НЕ сотрет наши selected
 
       paybox.style.display = 'block';
       btnIpaid.disabled = false;
@@ -714,6 +731,12 @@
       btnReserve.disabled = false;
       paybox.style.display = 'none';
       btnIpaid.disabled = true;
+
+      // ✅ reset lock on fail
+      pendingOrderId = null;
+      lockedSeatsSet = new Set();
+      lockedTotal = 0;
+      renderSelection();
     }
   });
 
@@ -730,6 +753,11 @@
 
       selected.clear();
       await syncSeats();
+
+      // ✅ reset lock after payment
+      lockedSeatsSet = new Set();
+      lockedTotal = 0;
+
       window.location.href = `ticket.html?order_id=${encodeURIComponent(pendingOrderId)}`;
     } catch(e){
       showPayMsg(String(e.message || e), 'error');
