@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Квиток</title>
   <style>
-    :root{--bg:#0b0f17;--card:#111827;--text:#e5e7eb;--muted:#9ca3af;--line:#1f2937;--ok:#22c55e;--warn:#f59e0b}
+    :root{--bg:#0b0f17;--card:#111827;--text:#e5e7eb;--muted:#9ca3af;--line:#1f2937;--ok:#22c55e;--warn:#f59e0b;--btn:#2563eb;--btn2:#374151}
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial}
     .wrap{max-width:720px;margin:0 auto;padding:18px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
     h1{margin:0 0 10px;font-size:20px}
@@ -16,50 +16,103 @@
     .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700}
     .paid{background:rgba(34,197,94,.15);color:var(--ok);border:1px solid rgba(34,197,94,.35)}
     .entr{background:rgba(245,158,11,.15);color:var(--warn);border:1px solid rgba(245,158,11,.35)}
-    .code{font-size:28px;font-weight:900;letter-spacing:1px;margin-top:8px}
-    .btn{display:inline-block;margin-top:12px;background:#2563eb;color:#fff;padding:10px 12px;border-radius:10px;text-decoration:none}
+    .code{font-size:28px;font-weight:900;letter-spacing:1px;margin-top:8px;word-break:break-word}
+    .btn{display:inline-block;background:var(--btn);color:#fff;padding:10px 12px;border-radius:10px;text-decoration:none;border:none;cursor:pointer}
+    .btn.secondary{background:var(--btn2)}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     .err{color:#fca5a5}
     ul{margin:6px 0 0;padding-left:18px}
+
+    /* ✅ чуть лучше на мобилке */
+    @media (max-width:520px){
+      .wrap{padding:12px}
+      h1{font-size:18px}
+      .row{flex-direction:column;align-items:flex-start}
+      .btns .btn{flex:1;min-width:0}
+    }
+
+    /* ✅ печать в PDF */
+    @media print{
+      body{background:#fff;color:#000}
+      .wrap{max-width:720px;padding:0}
+      .no-print{display:none !important}
+      .card{border:1px solid #ddd;background:#fff}
+      .muted{color:#444}
+      .row{border-bottom:1px dashed #ccc}
+      .code{color:#000}
+    }
   </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="card">
+  <!-- ✅ Это именно тот блок, который будем сохранять -->
+  <div class="card" id="ticketCard">
     <h1>🎟 Квиток на закритий показ</h1>
     <div class="muted">Покажіть цей квиток на вході.</div>
 
     <div style="margin-top:12px" id="content">Завантаження…</div>
+  </div>
 
+  <!-- ✅ кнопки скачивания/перехода -->
+  <div class="btns no-print">
+    <button class="btn secondary" id="btnPng">⬇️ Завантажити PNG</button>
+    <button class="btn secondary" id="btnPdf">🖨 Зберегти як PDF</button>
     <a class="btn" href="index.html">Повернутися до вибору місць</a>
   </div>
+
+  <div class="muted no-print" id="dlHint" style="margin-top:8px;font-size:12px;display:none"></div>
 </div>
+
+<!-- ✅ html2canvas для скачивания PNG -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxUdvb-OyoYtDk8kn2jV-wyA7jYDtiWdJlKlitHN_v-BkOmamLtWby82bUnKsU_5D8Mow/exec";
 
   function qs(name){
-    return new URL(window.location.href).searchParams.get(name);
+    const u = new URL(window.location.href);
+    return u.searchParams.get(name);
   }
 
   function esc(s){
     return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
 
+  function safeSeatList(seatsStr){
+    // поддержка форматов:
+    // "1-1,1-2" или "r1-s1,r1-s2"
+    const raw = String(seatsStr||'')
+      .split(',')
+      .map(s=>s.trim())
+      .filter(Boolean);
+
+    const out = [];
+    for (const s of raw){
+      let m = s.match(/^(\d{1,2})-(\d{1,2})$/);
+      if (m) { out.push({row:m[1], seat:m[2]}); continue; }
+
+      m = s.match(/^r(\d{1,2})-s(\d{1,2})$/i);
+      if (m) { out.push({row:m[1], seat:m[2]}); continue; }
+
+      // если прилетело что-то странное — пропускаем, чтобы не ломать билет
+    }
+    return out;
+  }
+
   async function loadTicket(){
     const orderId = qs('order_id');
     const el = document.getElementById('content');
-
     if (!orderId){
       el.innerHTML = `<div class="err">Немає order_id у посиланні.</div>`;
       return;
     }
 
     const url = `${API_URL}?action=ticket&order_id=${encodeURIComponent(orderId)}`;
-    const res = await fetch(url, { method:'GET', cache:'no-store' });
+    const res = await fetch(url, { method:'GET' });
     const data = await res.json();
 
     if (!data.ok){
-      if (data.error === 'expired'){
+      if (data.error === 'expired') {
         el.innerHTML = `<div class="err">Бронювання завершилось (10 хв минуло). Спробуйте обрати місця знову.</div>`;
         return;
       }
@@ -68,11 +121,7 @@
     }
 
     const t = data.ticket;
-
-    const seats = String(t.seats || '')
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean);
+    const seats = safeSeatList(t.seats);
 
     let badge = '';
     if (t.status === 'paid') badge = `<span class="badge paid">✅ Оплачено онлайн</span>`;
@@ -86,10 +135,7 @@
       <div class="row"><div class="muted">Місця</div><div>
         <ul>${
           seats.length
-            ? seats.map(s=>{
-                const [r, seat] = s.split('-');
-                return `<li>Ряд ${esc(r)}, місце ${esc(seat)}</li>`;
-              }).join('')
+            ? seats.map(x => `<li>Ряд ${esc(x.row)}, місце ${esc(x.seat)}</li>`).join('')
             : `<li class="muted">Місця не знайдено</li>`
         }</ul>
       </div></div>
@@ -98,6 +144,42 @@
       <div class="code">${esc(t.order_id)}</div>
     `;
   }
+
+  // ✅ Скачать PNG
+  async function downloadPNG(){
+    const hint = document.getElementById('dlHint');
+    hint.style.display = 'block';
+    hint.textContent = 'Готуємо зображення…';
+
+    const orderId = qs('order_id') || 'ticket';
+    const node = document.getElementById('ticketCard');
+
+    try{
+      // увеличим четкость
+      const canvas = await html2canvas(node, { scale: 2, backgroundColor: null, useCORS: true });
+      const dataUrl = canvas.toDataURL('image/png');
+
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `ticket_${orderId}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      hint.textContent = 'Готово ✅ PNG завантажено.';
+      setTimeout(()=> hint.style.display='none', 2500);
+    } catch(e){
+      hint.textContent = 'Не вдалося зробити PNG. Спробуйте кнопку PDF або інший браузер.';
+    }
+  }
+
+  // ✅ PDF через print (на телефоне выбираешь "Save as PDF")
+  function downloadPDF(){
+    window.print();
+  }
+
+  document.getElementById('btnPng').addEventListener('click', downloadPNG);
+  document.getElementById('btnPdf').addEventListener('click', downloadPDF);
 
   loadTicket();
 </script>
