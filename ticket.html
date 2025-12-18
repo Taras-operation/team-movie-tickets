@@ -5,47 +5,150 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Квиток</title>
   <style>
-    :root{--bg:#0b0f17;--card:#111827;--text:#e5e7eb;--muted:#9ca3af;--line:#1f2937;--ok:#22c55e;--warn:#f59e0b;--btn:#2563eb;--btn2:#374151}
+    :root{
+      --bg:#0b0f17;
+      --card:#111827;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --line:#1f2937;
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --btn:#2563eb;
+      --btn2:#374151;
+    }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial}
-    .wrap{max-width:720px;margin:0 auto;padding:18px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
-    h1{margin:0 0 10px;font-size:20px}
-    .muted{color:var(--muted)}
-    .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed #223047}
-    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700}
-    .paid{background:rgba(34,197,94,.15);color:var(--ok);border:1px solid rgba(34,197,94,.35)}
-    .entr{background:rgba(245,158,11,.15);color:var(--warn);border:1px solid rgba(245,158,11,.35)}
-    .code{font-size:28px;font-weight:900;letter-spacing:1px;margin-top:8px;word-break:break-word}
-    .btn{display:inline-block;background:var(--btn);color:#fff;padding:10px 12px;border-radius:10px;text-decoration:none;border:none;cursor:pointer}
-    .btn.secondary{background:var(--btn2)}
-    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .err{color:#fca5a5}
-    ul{margin:6px 0 0;padding-left:18px}
-
-    /* ✅ чуть лучше на мобилке */
-    @media (max-width:520px){
-      .wrap{padding:12px}
-      h1{font-size:18px}
-      .row{flex-direction:column;align-items:flex-start}
-      .btns .btn{flex:1;min-width:0}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
 
-    /* ✅ печать в PDF */
-    @media print{
-      body{background:#fff;color:#000}
-      .wrap{max-width:720px;padding:0}
-      .no-print{display:none !important}
-      .card{border:1px solid #ddd;background:#fff}
-      .muted{color:#444}
-      .row{border-bottom:1px dashed #ccc}
-      .code{color:#000}
+    .wrap{max-width:720px;margin:0 auto;padding:18px}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:16px;
+    }
+
+    h1{margin:0 0 10px;font-size:20px;line-height:1.2}
+    .muted{color:var(--muted)}
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:8px 0;
+      border-bottom:1px dashed #223047;
+      align-items:flex-start;
+    }
+    .row > div:last-child{
+      text-align:right;
+      max-width:62%;
+      word-break:break-word;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:12px;
+      line-height:1;
+    }
+    .paid{background:rgba(34,197,94,.15);color:var(--ok);border:1px solid rgba(34,197,94,.35)}
+    .entr{background:rgba(245,158,11,.15);color:var(--warn);border:1px solid rgba(245,158,11,.35)}
+
+    .code{
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:1px;
+      margin-top:8px;
+      word-break:break-word;
+    }
+
+    .btn{
+      display:inline-block;
+      background:var(--btn);
+      color:#fff;
+      padding:10px 12px;
+      border-radius:10px;
+      text-decoration:none;
+      border:none;
+      cursor:pointer;
+      font-size:14px;
+      line-height:1.1;
+      white-space:nowrap;
+    }
+    .btn.secondary{background:var(--btn2)}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+    .err{color:#fca5a5}
+    ul{margin:6px 0 0;padding-left:18px}
+    li{margin:2px 0}
+
+    .hint{margin-top:8px;font-size:12px;display:none}
+
+    /* ======= MOBILE ADAPTATION =======
+       Делаем компактнее и удобнее на телефоне
+    */
+    @media (max-width: 520px){
+      body{font-size:13px}
+      .wrap{padding:12px}
+      .card{padding:14px;border-radius:14px}
+
+      h1{font-size:18px;margin-bottom:8px}
+      .muted{font-size:12px}
+
+      /* строки в колонку */
+      .row{
+        flex-direction:column;
+        gap:6px;
+        padding:10px 0;
+      }
+      .row > div:last-child{
+        text-align:left;
+        max-width:100%;
+      }
+
+      /* код меньше, чтобы не "ломал" экран */
+      .code{
+        font-size:22px;
+        letter-spacing:0.6px;
+      }
+
+      /* список мест компактнее */
+      ul{padding-left:16px}
+      li{font-size:13px}
+
+      /* кнопки на всю ширину */
+      .btns{
+        flex-direction:column;
+        gap:10px;
+      }
+      .btns .btn{
+        width:100%;
+        text-align:center;
+        padding:12px 12px;
+        border-radius:12px;
+      }
+    }
+
+    /* Для очень маленьких экранов (старые iPhone) */
+    @media (max-width: 360px){
+      .wrap{padding:10px}
+      .card{padding:12px}
+      h1{font-size:17px}
+      .code{font-size:20px}
+      .btns .btn{padding:11px 10px}
     }
   </style>
 </head>
 <body>
 <div class="wrap">
-  <!-- ✅ Это именно тот блок, который будем сохранять -->
+
+  <!-- ✅ Этот блок сохраняем в PNG/PDF -->
   <div class="card" id="ticketCard">
     <h1>🎟 Квиток на закритий показ</h1>
     <div class="muted">Покажіть цей квиток на вході.</div>
@@ -53,18 +156,19 @@
     <div style="margin-top:12px" id="content">Завантаження…</div>
   </div>
 
-  <!-- ✅ кнопки скачивания/перехода -->
-  <div class="btns no-print">
+  <div class="btns">
     <button class="btn secondary" id="btnPng">⬇️ Завантажити PNG</button>
-    <button class="btn secondary" id="btnPdf">🖨 Зберегти як PDF</button>
+    <button class="btn secondary" id="btnPdf">⬇️ Завантажити PDF</button>
     <a class="btn" href="index.html">Повернутися до вибору місць</a>
   </div>
 
-  <div class="muted no-print" id="dlHint" style="margin-top:8px;font-size:12px;display:none"></div>
+  <div class="muted hint" id="dlHint"></div>
 </div>
 
-<!-- ✅ html2canvas для скачивания PNG -->
+<!-- ✅ html2canvas -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<!-- ✅ jsPDF (UMD) -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxUdvb-OyoYtDk8kn2jV-wyA7jYDtiWdJlKlitHN_v-BkOmamLtWby82bUnKsU_5D8Mow/exec";
@@ -75,12 +179,13 @@
   }
 
   function esc(s){
-    return String(s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    return String(s||'').replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
   }
 
+  // поддержка "1-1" и "r1-s1"
   function safeSeatList(seatsStr){
-    // поддержка форматов:
-    // "1-1,1-2" или "r1-s1,r1-s2"
     const raw = String(seatsStr||'')
       .split(',')
       .map(s=>s.trim())
@@ -93,8 +198,6 @@
 
       m = s.match(/^r(\d{1,2})-s(\d{1,2})$/i);
       if (m) { out.push({row:m[1], seat:m[2]}); continue; }
-
-      // если прилетело что-то странное — пропускаем, чтобы не ломать билет
     }
     return out;
   }
@@ -145,17 +248,23 @@
     `;
   }
 
-  // ✅ Скачать PNG
-  async function downloadPNG(){
+  function setHint(text){
     const hint = document.getElementById('dlHint');
     hint.style.display = 'block';
-    hint.textContent = 'Готуємо зображення…';
+    hint.textContent = text;
+  }
+  function hideHintSoon(){
+    const hint = document.getElementById('dlHint');
+    setTimeout(()=> hint.style.display='none', 2500);
+  }
 
+  // ✅ PNG
+  async function downloadPNG(){
     const orderId = qs('order_id') || 'ticket';
     const node = document.getElementById('ticketCard');
+    setHint('Готуємо PNG…');
 
     try{
-      // увеличим четкость
       const canvas = await html2canvas(node, { scale: 2, backgroundColor: null, useCORS: true });
       const dataUrl = canvas.toDataURL('image/png');
 
@@ -166,16 +275,44 @@
       a.click();
       a.remove();
 
-      hint.textContent = 'Готово ✅ PNG завантажено.';
-      setTimeout(()=> hint.style.display='none', 2500);
+      setHint('Готово ✅ PNG завантажено.');
+      hideHintSoon();
     } catch(e){
-      hint.textContent = 'Не вдалося зробити PNG. Спробуйте кнопку PDF або інший браузер.';
+      setHint('Не вдалося зробити PNG. Спробуйте інший браузер.');
+      console.error(e);
     }
   }
 
-  // ✅ PDF через print (на телефоне выбираешь "Save as PDF")
-  function downloadPDF(){
-    window.print();
+  // ✅ PDF (без печати)
+  async function downloadPDF(){
+    const orderId = qs('order_id') || 'ticket';
+    const node = document.getElementById('ticketCard');
+    setHint('Готуємо PDF…');
+
+    try{
+      const canvas = await html2canvas(node, { scale: 2, backgroundColor: '#111827', useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+
+      const { jsPDF } = window.jspdf;
+
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+
+      const pdf = new jsPDF({
+        orientation: imgW >= imgH ? 'l' : 'p',
+        unit: 'px',
+        format: [imgW, imgH]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgW, imgH, undefined, 'FAST');
+      pdf.save(`ticket_${orderId}.pdf`);
+
+      setHint('Готово ✅ PDF завантажено.');
+      hideHintSoon();
+    } catch(e){
+      setHint('Не вдалося зробити PDF. Спробуйте інший браузер (Chrome/Safari).');
+      console.error(e);
+    }
   }
 
   document.getElementById('btnPng').addEventListener('click', downloadPNG);
