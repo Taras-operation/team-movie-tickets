@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Квитки — Закритий показ</title>
   <style>
     :root{
@@ -15,13 +15,9 @@
       --seatmapBorder: rgba(255,255,255,0.07);
     }
     *{box-sizing:border-box}
-    body{
-      margin:0;background:var(--bg);color:var(--text);
-      font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      -webkit-text-size-adjust:100%;
-    }
-
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial}
     .wrap{max-width:1500px;margin:0 auto;padding:18px}
+
     .top{display:flex;gap:12px;align-items:flex-start;flex-wrap:nowrap}
     .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
     h1{margin:0 0 8px;font-size:20px}
@@ -40,9 +36,15 @@
       border: 1px solid var(--seatmapBorder);
       border-radius: 16px;
       padding: 14px 14px 10px;
-      overflow: visible;
+      overflow: hidden;
     }
-    .seatmap-inner{width:100%;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+    .seatmap-inner{
+      width:100%;
+      overflow-x:auto;
+      padding-bottom:6px;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
 
     .screen-wrap{text-align:center;color:var(--muted)}
     .screen-title{font-size:12px;letter-spacing:1px;margin-bottom:6px}
@@ -63,7 +65,11 @@
       align-items:center;
       min-width:760px;
     }
-    .row-label{opacity:.7;font-size:13px;font-variant-numeric:tabular-nums;text-align:center;user-select:none}
+    .row-label{
+      opacity:.7;font-size:13px;font-variant-numeric:tabular-nums;text-align:center;user-select:none
+    }
+    .row-label.right{ }
+
     .seats{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap;flex-direction:row-reverse}
 
     button.seat{
@@ -108,17 +114,12 @@
 
     .side-stack{display:flex;flex-direction:column;gap:10px}
 
-    .modal-backdrop{
-      position:fixed;inset:0;background:rgba(0,0,0,.6);
-      display:none;align-items:center;justify-content:center;padding:16px;
-      padding-bottom: max(16px, env(safe-area-inset-bottom));
-    }
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px}
     .modal{max-width:560px;width:100%}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
     input{
-      width:100%;padding:10px;border-radius:10px;border:1px solid #334155;
-      background:#0b1220;color:var(--text);
+      width:100%;padding:10px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:var(--text);
       font-size:14px;
     }
     .hr{height:1px;background:#223047;margin:12px 0}
@@ -127,90 +128,89 @@
       background:#0b1220;border:1px solid #223047;border-radius:12px;padding:12px;
       display:none;
     }
-
     .timer{font-size:16px;font-weight:700}
-
     .toast{margin-top:10px;color:#fca5a5}
     .toast.info{color:#93c5fd}
     .toast.ok{color:#86efac}
     .toast.error{color:#fca5a5}
 
-    /* ====== Responsive (общая) ====== */
+    .pay-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .btn.small{padding:10px 12px;border-radius:10px;font-weight:700}
+
+    /* ===== Desktop->Tablet ===== */
     @media (max-width:1100px){
       .top{flex-wrap:wrap}
       .side{width:100%;min-width:0;flex:1}
     }
 
-    /* ====== MOBILE UPGRADE (десктоп не трогаем) ====== */
-    .mobile-bar{display:none}
-
+    /* ===== Mobile UX FIXES ===== */
     @media (max-width:520px){
       .wrap{padding:12px}
-      .card{border-radius:16px;padding:12px}
+      .top{gap:10px}
+      .card{padding:12px;border-radius:14px}
 
-      /* Тексты/заголовки влезают */
-      .title-center{padding:4px 2px 0}
-      .title-center h1{
-        font-size:clamp(16px, 5vw, 20px);
-        line-height:1.2;
-        word-break:break-word;
-      }
-      .session-main{
-        font-size:clamp(12px, 3.6vw, 14px);
-        line-height:1.35;
-        word-break:break-word;
-      }
-      .session-sub{
-        font-size:clamp(11px, 3.3vw, 13px);
-        line-height:1.35;
-        word-break:break-word;
-      }
-      .session-hint{
-        font-size:clamp(11px, 3.2vw, 12px);
-        line-height:1.35;
-      }
+      .title-center h1{font-size:18px;line-height:1.2}
+      .session-main{font-size:13px}
+      .session-sub{font-size:12px}
+      .session-hint{font-size:12px}
 
-      /* Схема: чуть компактнее */
-      .seatmap{padding:10px}
+      /* Схема: меньше кнопки, меньше отступы, без "ползущего" вида */
+      .seatmap{padding:12px}
       button.seat{width:28px;height:28px;border-radius:7px;font-size:12px}
-      .hall-grid{grid-template-columns:22px 1fr 22px;row-gap:8px}
-      .legend{gap:10px;font-size:12px}
 
-      /* Сайдбар: ок, но кнопки подтверждения должны быть всегда видны -> нижняя панель */
-      .actions{display:none}
-      #syncStatus{padding-bottom:76px} /* чтобы текст не прятался за нижней панелью */
+      /* Важное: не даём iOS zoom на inputs */
+      input{font-size:16px}
 
-      /* Нижняя панель */
+      .grid{grid-template-columns:1fr}
+
+      /* Чтобы "экран" был визуально понятен и центр совпадал со схемой */
+      .hall-grid{grid-template-columns:22px 1fr 0;row-gap:8px;min-width:740px}
+      .row-label.right{display:none}
+
+      /* Скрываем огромные нижние блоки на мобиле: будет sticky-бар */
+      .side{width:100%;min-width:0}
+      .side .card.prices-card{display:none}
+
+      /* sticky bottom bar */
       .mobile-bar{
-        display:flex;
         position:fixed;
-        left:0;right:0;bottom:0;
-        padding:10px 12px;
-        padding-bottom:max(10px, env(safe-area-inset-bottom));
+        left:0; right:0; bottom:0;
         background:rgba(17,24,39,0.92);
         border-top:1px solid rgba(255,255,255,0.08);
-        backdrop-filter: blur(10px);
-        z-index:50;
+        backdrop-filter: blur(8px);
+        padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+        display:flex;
         gap:10px;
         align-items:center;
         justify-content:space-between;
+        z-index:50;
       }
-      .mobile-bar .sum{
-        display:flex;flex-direction:column;gap:2px;
-        min-width:120px;
+      .mobile-bar .left{
+        display:flex;flex-direction:column;gap:2px;min-width:0;
       }
-      .mobile-bar .sum .label{font-size:11px;color:var(--muted)}
-      .mobile-bar .sum .value{font-size:14px;font-weight:800}
-      .mobile-bar .mb-actions{
-        display:flex;gap:8px;flex:1;justify-content:flex-end;
-      }
-      .mobile-bar .btn{padding:12px 12px;border-radius:12px;min-width:120px}
+      .mobile-bar .left .muted{font-size:11px}
+      .mobile-bar .left .price{font-size:14px;font-weight:800}
+      .mobile-bar .right{display:flex;gap:10px}
+      .mobile-bar .btn{padding:10px 12px;border-radius:12px;min-width:120px}
 
-      /* Модалка: без iOS zoom и влезает */
-      .modal-backdrop{align-items:flex-start;justify-content:center}
-      .modal{margin-top:12px;max-height:92vh;overflow:auto}
-      input{font-size:16px} /* ВАЖНО: iOS перестает зумить */
-      .grid{grid-template-columns:1fr}
+      /* чтобы контент не прятался под bar */
+      body{padding-bottom:90px}
+
+      /* Модалка не fullscreen, нормальная карточка со скроллом */
+      .modal-backdrop{align-items:flex-end}
+      .modal{
+        max-width:560px;
+        width:100%;
+        border-radius:16px;
+        max-height: calc(100vh - 24px);
+        overflow:auto;
+      }
+    }
+
+    /* Mobile bar hidden on desktop */
+    .mobile-bar{display:none}
+    @media (max-width:520px){
+      .mobile-bar{display:flex}
     }
   </style>
 </head>
@@ -235,7 +235,7 @@
       </div>
 
       <div class="seatmap">
-        <div class="seatmap-inner">
+        <div class="seatmap-inner" id="seatmapInner">
           <div class="screen-wrap">
             <div class="screen-title">ЕКРАН</div>
             <div class="screen-bar"></div>
@@ -264,7 +264,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="selectionCard">
           <h1 style="font-size:16px;margin-bottom:6px">Ваші місця</h1>
           <div class="muted" id="selHint">Клікніть по місцях у схемі.</div>
           <ul class="sel-list" id="selList"></ul>
@@ -286,15 +286,15 @@
   </div>
 </div>
 
-<!-- MOBILE sticky bar (только на телефоне) -->
-<div class="mobile-bar" id="mobileBar">
-  <div class="sum">
-    <div class="label" id="mbHint">Разом</div>
-    <div class="value" id="mbTotal">0 грн</div>
+<!-- Sticky bar ONLY mobile -->
+<div class="mobile-bar" id="mobileBar" aria-hidden="true">
+  <div class="left">
+    <div class="muted" id="mobileHint">Оберіть місця</div>
+    <div class="price" id="mobileTotal">0 грн</div>
   </div>
-  <div class="mb-actions">
-    <button class="btn secondary" id="btnClearMobile" disabled>Скасувати</button>
-    <button class="btn primary" id="btnConfirmMobile" disabled>Підтвердити</button>
+  <div class="right">
+    <button class="btn secondary" id="btnClearM" disabled>Скасувати</button>
+    <button class="btn primary" id="btnConfirmM" disabled>Підтвердити</button>
   </div>
 </div>
 
@@ -329,7 +329,7 @@
     <div class="paybox" id="paybox">
       <div class="hr"></div>
 
-      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
         <div>
           <div class="muted">Бронювання діє ще:</div>
           <div class="timer" id="timer">10:00</div>
@@ -344,17 +344,13 @@
 
       <div class="muted" style="margin-bottom:6px">Оплата (картка / банка):</div>
 
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between">
-        <div style="font-weight:700;letter-spacing:.3px">
-          💳 <span id="payCard">4874 1000 2272 4531</span>
-        </div>
-        <button class="btn secondary" id="btnCopyCard" type="button" style="padding:10px 12px">Скопіювати</button>
+      <div style="font-weight:800;font-size:16px;letter-spacing:.3px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        💳 <span id="payCard">4874 1000 2272 4531</span>
       </div>
 
-      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
-        <a class="btn primary" id="btnOpenJar" href="https://send.monobank.ua/jar/7CyevktNVR" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px">
-          🔗 Відкрити банку
-        </a>
+      <div class="pay-actions">
+        <button class="btn secondary small" id="btnCopyCard">Скопіювати</button>
+        <a class="btn primary small" id="btnOpenJar" href="https://send.monobank.ua/jar/7CyevktNVR" target="_blank" rel="noopener">Відкрити банку</a>
       </div>
 
       <div class="muted" style="margin-top:8px">1) Оплатіть (карткою або в банці) → 2) Натисніть “Я оплатив(ла)”.</div>
@@ -379,8 +375,8 @@
     10:800
   };
 
-  const PAY_CARD = "4874 1000 2272 4531";
-  const PAY_JAR_URL = "https://send.monobank.ua/jar/7CyevktNVR";
+  const MONO_JAR_URL = "https://send.monobank.ua/jar/7CyevktNVR";
+  const MONO_CARD_TEXT = "4874 1000 2272 4531";
 
   const HALL_ROWS = [
     { row: 1, seats: range(1,6),  vip:false },
@@ -411,12 +407,14 @@
   const selHint = document.getElementById('selHint');
   const syncStatus = document.getElementById('syncStatus');
 
-  // mobile bar refs
+  const seatmapInner = document.getElementById('seatmapInner');
+
+  // mobile bar
   const mobileBar = document.getElementById('mobileBar');
-  const mbTotal = document.getElementById('mbTotal');
-  const mbHint = document.getElementById('mbHint');
-  const btnClearMobile = document.getElementById('btnClearMobile');
-  const btnConfirmMobile = document.getElementById('btnConfirmMobile');
+  const mobileHint = document.getElementById('mobileHint');
+  const mobileTotal = document.getElementById('mobileTotal');
+  const btnClearM = document.getElementById('btnClearM');
+  const btnConfirmM = document.getElementById('btnConfirmM');
 
   const modalBackdrop = document.getElementById('modalBackdrop');
   const inpName = document.getElementById('inpName');
@@ -431,16 +429,45 @@
   const payErr = document.getElementById('payErr');
   const btnX = document.getElementById('btnX');
 
-  const payCardEl = document.getElementById('payCard');
+  const payCard = document.getElementById('payCard');
   const btnCopyCard = document.getElementById('btnCopyCard');
   const btnOpenJar = document.getElementById('btnOpenJar');
 
-  payCardEl.textContent = PAY_CARD;
-  btnOpenJar.href = PAY_JAR_URL;
+  payCard.textContent = MONO_CARD_TEXT;
+  btnOpenJar.href = MONO_JAR_URL;
 
   let timerInterval = null;
   let reservedUntilMs = null;
   let pendingOrderId = null;
+
+  // ===== Seatmap center/scroll handling =====
+  let lastSeatmapScrollLeft = 0;
+  let userScrolledSeatmap = false;
+
+  function isMobile(){
+    return window.matchMedia && window.matchMedia('(max-width:520px)').matches;
+  }
+
+  function centerSeatmapOnce(){
+    if (!seatmapInner) return;
+    // центрируем только на мобиле и только если пользователь ещё не скроллил
+    if (!isMobile()) return;
+    if (userScrolledSeatmap) return;
+
+    // после рендера нужен кадр, чтобы scrollWidth был актуальный
+    requestAnimationFrame(() => {
+      const max = seatmapInner.scrollWidth - seatmapInner.clientWidth;
+      if (max > 0){
+        seatmapInner.scrollLeft = Math.floor(max / 2);
+        lastSeatmapScrollLeft = seatmapInner.scrollLeft;
+      }
+    });
+  }
+
+  seatmapInner.addEventListener('scroll', () => {
+    userScrolledSeatmap = true;
+    lastSeatmapScrollLeft = seatmapInner.scrollLeft;
+  }, { passive:true });
 
   function seatKey(row, seat){ return `${row}-${seat}`; }
   function getSeatPrice(row){ return PRICE_BY_ROW[row] ?? 0; }
@@ -452,10 +479,13 @@
   }
 
   function renderHall(){
+    // сохраняем текущий scroll, чтобы схема не "прыгала"
+    const savedScroll = seatmapInner ? seatmapInner.scrollLeft : 0;
+
     hallEl.innerHTML = '';
     HALL_ROWS.forEach(r => {
       const left = document.createElement('div');
-      left.className = 'row-label';
+      left.className = 'row-label left';
       left.textContent = r.row;
 
       const seats = document.createElement('div');
@@ -474,6 +504,7 @@
           if (seatsTaken.has(key) || seatsReserved.has(key)) return;
           if (selected.has(key)) selected.delete(key);
           else selected.add(key);
+
           renderHall();
           renderSelection();
         });
@@ -482,12 +513,23 @@
       });
 
       const right = document.createElement('div');
-      right.className = 'row-label';
+      right.className = 'row-label right';
       right.textContent = r.row;
 
       hallEl.appendChild(left);
       hallEl.appendChild(seats);
       hallEl.appendChild(right);
+    });
+
+    // возвращаем scroll назад (и если мобила и не скроллили — центрируем)
+    requestAnimationFrame(() => {
+      if (!seatmapInner) return;
+      if (userScrolledSeatmap){
+        seatmapInner.scrollLeft = savedScroll;
+      } else {
+        // если ещё не скроллили — держим центр, а не левый край
+        centerSeatmapOnce();
+      }
     });
   }
 
@@ -515,15 +557,15 @@
     totalPriceEl.textContent = `${total} грн`;
     modalTotal.textContent = `${total} грн`;
 
-    // mobile bar
-    mbTotal.textContent = `${total} грн`;
-    mbHint.textContent = keys.length ? `Обрано: ${keys.length}` : 'Разом';
+    // mobile bar mirrors
+    mobileTotal.textContent = `${total} грн`;
+    mobileHint.textContent = keys.length ? `Обрано місць: ${keys.length}` : 'Оберіть місця';
 
     const has = keys.length > 0;
     btnClear.disabled = !has;
     btnConfirm.disabled = !has;
-    btnClearMobile.disabled = !has;
-    btnConfirmMobile.disabled = !has;
+    btnClearM.disabled = !has;
+    btnConfirmM.disabled = !has;
 
     selHint.textContent = has ? `Обрано місць: ${keys.length}` : 'Клікніть по місцях у схемі.';
   }
@@ -591,6 +633,7 @@
     modalBackdrop.style.display = 'flex';
     btnReserve.disabled = false;
 
+    // на мобиле лучше фокус на имя, но без "подскока" всей страницы
     setTimeout(() => inpName.focus(), 50);
   }
 
@@ -649,28 +692,33 @@
     return { name, phone, seats, total };
   }
 
-  // ====== actions (общие) ======
-  function clearSelection(){
-    selected.clear();
-    renderHall(); renderSelection();
-    // на мобиле после очистки пользователь видит нижнюю панель сразу
-  }
-
-  btnClear.addEventListener('click', clearSelection);
-  btnClearMobile.addEventListener('click', clearSelection);
+  // ===== events =====
+  btnClear.addEventListener('click', () => { selected.clear(); renderHall(); renderSelection(); });
+  btnClearM.addEventListener('click', () => { selected.clear(); renderHall(); renderSelection(); });
 
   btnConfirm.addEventListener('click', openModal);
-  btnConfirmMobile.addEventListener('click', openModal);
+  btnConfirmM.addEventListener('click', openModal);
 
   btnX.addEventListener('click', closeModal);
 
-  // копирование карты
+  // click backdrop closes modal
+  modalBackdrop.addEventListener('click', (e) => {
+    if (e.target === modalBackdrop) closeModal();
+  });
+
   btnCopyCard.addEventListener('click', async () => {
     try{
-      await navigator.clipboard.writeText(PAY_CARD.replace(/\s+/g,' ').trim());
+      await navigator.clipboard.writeText(MONO_CARD_TEXT.replace(/\s+/g,''));
       showPayMsg('Номер картки скопійовано ✅', 'ok');
-    } catch(e){
-      showPayMsg('Не вдалося скопіювати. Скопіюйте вручну.', 'error');
+    }catch(e){
+      // fallback
+      const t = document.createElement('textarea');
+      t.value = MONO_CARD_TEXT.replace(/\s+/g,'');
+      document.body.appendChild(t);
+      t.select();
+      document.execCommand('copy');
+      document.body.removeChild(t);
+      showPayMsg('Номер картки скопійовано ✅', 'ok');
     }
   });
 
@@ -708,7 +756,7 @@
       paybox.style.display = 'block';
       btnIpaid.disabled = false;
 
-      showPayMsg('Бронювання створено ✅ Оплатіть за реквізитами та натисніть “Я оплатив(ла)”.', 'ok');
+      showPayMsg('Бронювання створено ✅ Оплатіть (картка/банка) та натисніть “Я оплатив(ла)”.', 'ok');
     } catch(e){
       showModalError(String(e.message || e));
       btnReserve.disabled = false;
@@ -737,10 +785,20 @@
     }
   });
 
+  // ===== init =====
   renderHall();
   renderSelection();
   syncSeats();
   setInterval(syncSeats, 15000);
+
+  // центрируем схему на мобиле при первом открытии
+  window.addEventListener('load', () => {
+    centerSeatmapOnce();
+  });
+  window.addEventListener('resize', () => {
+    // при ресайзе не ломаем пользователю скролл
+    if (!userScrolledSeatmap) centerSeatmapOnce();
+  });
 </script>
 </body>
 </html>
