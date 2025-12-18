@@ -125,6 +125,14 @@
     .toast.ok{color:#86efac}
     .toast.error{color:#fca5a5}
 
+    /* ✅ ADDED: payment buttons layout */
+    .pay-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .pay-actions .btn{white-space:nowrap}
+    .pay-rek{font-weight:700}
+    .pay-small{font-size:12px;color:var(--muted);margin-top:6px}
+    .pay-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .pay-row-left{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
     @media (max-width:1100px){
       .top{flex-wrap:wrap}
       .side{width:100%;min-width:0;flex:1}
@@ -133,6 +141,30 @@
       button.seat{width:28px;height:28px;border-radius:7px}
       .grid{grid-template-columns:1fr}
       .hall-grid{grid-template-columns:22px 1fr 22px;row-gap:8px}
+    }
+
+    /* ✅ ADDED: better mobile UX */
+    @media (max-width: 900px){
+      .wrap{padding:12px}
+      .card{border-radius:16px}
+      .title-center h1{font-size:18px}
+      .session-main{font-size:13px}
+      .session-sub{font-size:12px}
+    }
+
+    @media (max-width: 520px){
+      .modal-backdrop{padding:0}
+      .modal{
+        height:100vh;
+        max-width:100%;
+        border-radius:0;
+        overflow:auto;
+      }
+      .actions .btn{flex:1}
+      .pay-actions{flex-direction:column;align-items:stretch}
+      .pay-actions .btn{width:100%}
+      .pay-row{flex-direction:column;align-items:stretch}
+      .pay-row-left{flex-direction:column;align-items:stretch}
     }
   </style>
 </head>
@@ -241,7 +273,7 @@
     <div class="paybox" id="paybox">
       <div class="hr"></div>
 
-      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
         <div>
           <div class="muted">Бронювання діє ще:</div>
           <div class="timer" id="timer">10:00</div>
@@ -254,9 +286,25 @@
 
       <div class="hr"></div>
 
+      <!-- ✅ ADDED: your payment details -->
       <div class="muted" style="margin-bottom:6px">Оплата (картка / банка):</div>
-      <div style="font-weight:600">Monobank / Картка / Банка: <span id="payRequisites">XXXX XXXX XXXX XXXX</span></div>
-      <div class="muted" style="margin-top:6px">1) Оплатіть → 2) Натисніть “Я оплатив(ла)”.</div>
+
+      <div class="pay-row">
+        <div class="pay-row-left">
+          <div class="pay-rek">
+            💳 <span id="payCard">4874 1000 2272 4531</span>
+          </div>
+          <button class="btn secondary" id="btnCopyCard" type="button">Скопіювати</button>
+        </div>
+
+        <a class="btn primary" id="btnJar" href="https://send.monobank.ua/jar/7CyevktNVR" target="_blank" rel="noopener">
+          🔗 Відкрити банку
+        </a>
+      </div>
+
+      <div class="pay-small">
+        1) Оплатіть (карткою або в банці) → 2) Натисніть “Я оплатив(ла)”.
+      </div>
 
       <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn primary" id="btnIpaid" disabled>Я оплатив(ла)</button>
@@ -278,7 +326,9 @@
     10:800
   };
 
-  const PAY_REQUISITES_TEXT = "ВСТАВТЕ_НОМЕР_КАРТКИ_АБО_ПОСИЛАННЯ_НА_БАНКУ";
+  // ✅ ADDED: payment constants
+  const PAY_CARD_TEXT = "4874 1000 2272 4531";
+  const PAY_JAR_LINK  = "https://send.monobank.ua/jar/7CyevktNVR";
 
   const HALL_ROWS = [
     { row: 1, seats: range(1,6),  vip:false },
@@ -316,14 +366,30 @@
 
   const paybox = document.getElementById('paybox'); // ✅ важное
   const modalTotal = document.getElementById('modalTotal');
-  const payRequisites = document.getElementById('payRequisites');
   const timerEl = document.getElementById('timer');
   const btnReserve = document.getElementById('btnReserve');
   const btnIpaid = document.getElementById('btnIpaid');
   const payErr = document.getElementById('payErr');
   const btnX = document.getElementById('btnX');
 
-  payRequisites.textContent = PAY_REQUISITES_TEXT;
+  // ✅ ADDED: payment UI refs
+  const payCardEl = document.getElementById('payCard');
+  const btnCopyCard = document.getElementById('btnCopyCard');
+  const btnJar = document.getElementById('btnJar');
+
+  // ✅ ADDED: set payment data
+  payCardEl.textContent = PAY_CARD_TEXT;
+  btnJar.href = PAY_JAR_LINK;
+
+  // ✅ ADDED: copy card button
+  btnCopyCard.addEventListener('click', async () => {
+    try{
+      await navigator.clipboard.writeText(PAY_CARD_TEXT);
+      showPayMsg('Номер картки скопійовано ✅', 'ok');
+    } catch(e){
+      showPayMsg('Не вдалося скопіювати. Скопіюйте вручну.', 'error');
+    }
+  });
 
   let timerInterval = null;
   let reservedUntilMs = null;
@@ -470,7 +536,6 @@
     stopTimer();
 
     modalBackdrop.style.display = 'flex';
-    payRequisites.textContent = PAY_REQUISITES_TEXT;
     btnReserve.disabled = false;
     inpName.focus();
   }
@@ -571,11 +636,11 @@
 
       await syncSeats();
 
-      // ✅ вот та самая правка: показываем paybox только после брони
+      // ✅ показываем paybox только после брони
       paybox.style.display = 'block';
       btnIpaid.disabled = false;
 
-      showPayMsg('Бронювання створено ✅ Оплатіть за реквізитами та натисніть “Я оплатив(ла)”.', 'ok');
+      showPayMsg('Бронювання створено ✅ Оплатіть за реквізитами/банкою та натисніть “Я оплатив(ла)”.', 'ok');
     } catch(e){
       showModalError(String(e.message || e));
       btnReserve.disabled = false;
